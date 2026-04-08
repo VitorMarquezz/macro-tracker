@@ -41,16 +41,16 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
- 
+
   .app { max-width: 480px; margin: 0 auto; padding: 0 0 calc(80px + var(--safe-bottom)); }
- 
+
   .header { background: var(--blue); color: white; padding: 48px 20px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
   .header h1 { font-size: 22px; font-weight: 700; }
   .header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
   .header-right { text-align: right; }
   .header-date { font-size: 12px; opacity: 0.75; }
   .free-badge { font-size: 11px; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; }
- 
+
   /* API Banner */
   .api-banner { background: #E6F1FB; border-left: 4px solid var(--blue); margin: 14px 16px; padding: 12px 14px; border-radius: var(--radius-sm); display: none; }
   .api-banner.show { display: block; }
@@ -61,15 +61,15 @@
   .api-banner input { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #85B7EB; font-size: 14px; background: white; color: #1a1a1a; outline: none; }
   .api-banner input:focus { border-color: var(--blue); }
   .api-save-btn { margin-top: 8px; width: 100%; padding: 10px; background: var(--blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
- 
+
   .section { padding: 14px 16px 0; }
   .section-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
- 
+
   .goals-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .goal-box { background: var(--card); border-radius: var(--radius-sm); padding: 10px; border: 1px solid var(--border); text-align: center; }
   .goal-box label { font-size: 11px; color: var(--text3); display: block; margin-bottom: 4px; }
   .goal-box input { width: 100%; border: none; outline: none; font-size: 16px; font-weight: 600; text-align: center; background: transparent; color: var(--text); }
- 
+
   .cal-card { background: var(--card); border-radius: var(--radius); margin: 10px 16px; padding: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
   .cal-nums .lbl { font-size: 12px; color: var(--text3); }
   .cal-nums .big { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; margin: 4px 0; }
@@ -77,7 +77,7 @@
   .ring-wrap { position: relative; width: 72px; height: 72px; }
   .ring-wrap svg { transform: rotate(-90deg); }
   .ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--text); }
- 
+
   .macros-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0 16px; }
   .mc { background: var(--card); border-radius: var(--radius-sm); padding: 12px 10px; border: 1px solid var(--border); }
   .mc .lbl { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
@@ -91,26 +91,26 @@
   .pb-p { background: var(--blue); }
   .pb-c { background: var(--green); }
   .pb-f { background: var(--amber); }
- 
+
   .input-card { background: var(--card); border-radius: var(--radius); margin: 12px 16px; border: 1px solid var(--border); overflow: hidden; }
   .tabs { display: flex; border-bottom: 1px solid var(--border); }
   .tab { flex: 1; padding: 12px 4px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
   .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
   .tab svg { width: 15px; height: 15px; }
- 
+
   .panel { display: none; padding: 14px; }
   .panel.active { display: block; }
- 
+
   textarea { width: 100%; border: none; outline: none; resize: none; font-size: 15px; color: var(--text); background: transparent; font-family: inherit; min-height: 64px; }
   textarea::placeholder { color: var(--text3); }
- 
+
   .action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
   .hint { font-size: 12px; color: var(--text3); }
- 
+
   .btn-primary { background: var(--blue); color: white; border: none; border-radius: 9px; padding: 9px 20px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
   .btn-primary:disabled { opacity: 0.4; cursor: default; }
   .btn-primary:active { opacity: 0.85; }
- 
+
   .voice-center { text-align: center; padding: 6px 0 4px; }
   .mic-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; transition: all .15s; }
   .mic-btn.rec { background: var(--red); border-color: var(--red); animation: pulse 1s infinite; }
@@ -119,7 +119,7 @@
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
   .mic-status { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
   .transcript { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 14px; color: var(--text); min-height: 40px; display: none; border: 1px solid var(--border); }
- 
+
   .photo-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .photo-btn { padding: 14px 8px; font-size: 14px; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; font-family: inherit; }
   .photo-btn svg { width: 22px; height: 22px; color: var(--blue); }
@@ -127,7 +127,7 @@
   .preview-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
   .preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
   .rm-photo { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.6); border: none; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
- 
+
   .loading { display: none; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); padding: 8px 16px; }
   .loading.show { display: flex; }
   .dots { display: flex; gap: 4px; }
@@ -135,11 +135,11 @@
   .dots span:nth-child(2) { animation-delay: .15s; }
   .dots span:nth-child(3) { animation-delay: .3s; }
   @keyframes hop { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
- 
+
   .meals-section { padding: 0 16px 12px; }
   .meals-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .btn-clear { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; color: var(--text2); cursor: pointer; font-family: inherit; }
- 
+
   .meals-list { display: flex; flex-direction: column; gap: 8px; }
   .meal { background: var(--card); border-radius: var(--radius-sm); padding: 11px 13px; border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
   .meal-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
@@ -157,13 +157,13 @@
   .meal-right { text-align: right; flex-shrink: 0; }
   .meal-kcal { font-size: 14px; font-weight: 700; color: var(--text); }
   .del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0; margin-top: 2px; }
- 
+
   .empty { text-align: center; padding: 30px 20px; color: var(--text3); font-size: 14px; }
   .empty svg { width: 40px; height: 40px; margin: 0 auto 10px; display: block; opacity: 0.3; }
- 
+
   .toast { position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap; z-index: 999; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
- 
+
   .install-banner { background: var(--blue-light); border: 1px solid rgba(24,95,165,0.2); margin: 12px 16px; padding: 12px 14px; border-radius: var(--radius-sm); display: none; align-items: center; gap: 10px; }
   .install-banner.show { display: flex; }
   .install-banner p { font-size: 13px; color: var(--blue); flex: 1; }
@@ -173,7 +173,7 @@
 </head>
 <body>
 <div class="app">
- 
+
   <div class="header">
     <div>
       <h1>Macro Tracker IA</h1>
@@ -184,13 +184,13 @@
       <div class="free-badge">Gemini · Grátis</div>
     </div>
   </div>
- 
+
   <div class="install-banner" id="installBanner">
     <p>Instale o app na sua tela inicial!</p>
     <button onclick="installApp()">Instalar</button>
     <button class="close-banner" onclick="document.getElementById('installBanner').classList.remove('show')">×</button>
   </div>
- 
+
   <div class="api-banner show" id="apiBanner">
     <h3>Configure sua chave do Gemini (grátis)</h3>
     <p>Você precisa de uma chave gratuita do Google para a IA funcionar.</p>
@@ -203,7 +203,7 @@
     <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off">
     <button class="api-save-btn" onclick="saveApiKey()">Salvar e começar</button>
   </div>
- 
+
   <div class="section" style="margin-top:12px">
     <div class="section-title">Metas diárias</div>
     <div class="goals-row">
@@ -212,7 +212,7 @@
       <div class="goal-box"><label>Gordura (g)</label><input type="number" id="gF" value="70" min="0" max="999"></div>
     </div>
   </div>
- 
+
   <div class="cal-card">
     <div class="cal-nums">
       <div class="lbl">Calorias hoje</div>
@@ -228,7 +228,7 @@
       <div class="ring-pct" id="calPct">0%</div>
     </div>
   </div>
- 
+
   <div class="macros-row" style="margin-bottom:12px">
     <div class="mc mc-p">
       <div class="lbl">Proteína</div>
@@ -249,7 +249,7 @@
       <div class="pbar"><div class="pb-f" id="fBar" style="width:0%"></div></div>
     </div>
   </div>
- 
+
   <div class="input-card">
     <div class="tabs">
       <button class="tab active" id="tabText" onclick="switchTab('text')">
@@ -265,7 +265,7 @@
         Foto
       </button>
     </div>
- 
+
     <div class="panel active" id="panelText">
       <textarea id="textInput" placeholder="Ex: frango grelhado 150g, arroz 3 colheres, feijão 1 concha, salada..."></textarea>
       <div class="action-row">
@@ -273,7 +273,7 @@
         <button class="btn-primary" id="btnText" onclick="submitText()">Analisar</button>
       </div>
     </div>
- 
+
     <div class="panel" id="panelVoice">
       <div class="voice-center">
         <button class="mic-btn" id="micBtn" onclick="toggleVoice()">
@@ -288,7 +288,7 @@
         <button class="btn-primary" id="btnVoice" onclick="submitVoice()" disabled>Analisar</button>
       </div>
     </div>
- 
+
     <div class="panel" id="panelPhoto">
       <div id="photoBtns" class="photo-btns">
         <button class="photo-btn" onclick="document.getElementById('camIn').click()">
@@ -314,12 +314,12 @@
       </div>
     </div>
   </div>
- 
+
   <div class="loading" id="loading">
     <div class="dots"><span></span><span></span><span></span></div>
     <span id="loadingMsg">Analisando com IA...</span>
   </div>
- 
+
   <div class="meals-section">
     <div class="meals-header">
       <div class="section-title" style="margin:0">Refeições de hoje</div>
@@ -333,46 +333,46 @@
     </div>
   </div>
 </div>
- 
+
 <div class="toast" id="toast"></div>
- 
+
 <script>
 let meals = [], photoB64 = null, photoMime = null;
 let recognition = null, isRecording = false, voiceText = '';
 let deferredPrompt = null;
 let apiKey = '';
- 
+
 const GEMINI_URL = key =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
- 
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
+
 const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
 Analise a refeição descrita e estime os valores nutricionais.
 Responda SOMENTE com JSON válido, sem texto extra, sem markdown, sem backticks:
 {"prot":número,"carb":número,"fat":número,"kcal":número,"desc":"descrição curta em até 8 palavras em português"}
 Use estimativas realistas para porções brasileiras típicas.`;
- 
+
 function init() {
   apiKey = localStorage.getItem('mt_gemini_key') || '';
   if (apiKey) document.getElementById('apiBanner').classList.remove('show');
- 
+
   try {
     const s = localStorage.getItem('mt_meals_v3');
     if (s) { const d = JSON.parse(s); if (d.date === new Date().toDateString()) meals = d.meals || []; }
   } catch(e){}
- 
+
   try {
     const g = JSON.parse(localStorage.getItem('mt_goals') || '{}');
     if (g.p) document.getElementById('gP').value = g.p;
     if (g.c) document.getElementById('gC').value = g.c;
     if (g.f) document.getElementById('gF').value = g.f;
   } catch(e){}
- 
+
   document.getElementById('headerDate').textContent =
     new Date().toLocaleDateString('pt-BR', {weekday:'short', day:'numeric', month:'short'});
- 
+
   updateUI();
 }
- 
+
 function saveApiKey() {
   const k = document.getElementById('apiKeyInput').value.trim();
   if (!k || k.length < 10) { toast('Chave inválida. Verifique e tente novamente.'); return; }
@@ -381,7 +381,7 @@ function saveApiKey() {
   document.getElementById('apiBanner').classList.remove('show');
   toast('Chave salva! Tudo pronto.');
 }
- 
+
 function getGoals() {
   const p = parseInt(document.getElementById('gP').value)||150;
   const c = parseInt(document.getElementById('gC').value)||250;
@@ -389,16 +389,16 @@ function getGoals() {
   localStorage.setItem('mt_goals', JSON.stringify({p,c,f}));
   return {p,c,f};
 }
- 
+
 function saveMeals() {
   localStorage.setItem('mt_meals_v3', JSON.stringify({ date: new Date().toDateString(), meals }));
 }
- 
+
 function updateUI() {
   const g = getGoals();
   const t = meals.reduce((a,m) => ({p:a.p+m.prot,c:a.c+m.carb,f:a.f+m.fat,k:a.k+m.kcal}), {p:0,c:0,f:0,k:0});
   const cg = g.p*4 + g.c*4 + g.f*9;
- 
+
   document.getElementById('pV').textContent = Math.round(t.p);
   document.getElementById('cV').textContent = Math.round(t.c);
   document.getElementById('fV').textContent = Math.round(t.f);
@@ -407,18 +407,18 @@ function updateUI() {
   document.getElementById('pG').textContent = '/' + g.p + 'g';
   document.getElementById('cG').textContent = '/' + g.c + 'g';
   document.getElementById('fG').textContent = '/' + g.f + 'g';
- 
+
   document.getElementById('pBar').style.width = Math.min(100,Math.round(t.p/g.p*100)) + '%';
   document.getElementById('cBar').style.width = Math.min(100,Math.round(t.c/g.c*100)) + '%';
   document.getElementById('fBar').style.width = Math.min(100,Math.round(t.f/g.f*100)) + '%';
- 
+
   const kp = cg > 0 ? Math.min(100, Math.round(t.k/cg*100)) : 0;
   document.getElementById('calArc').style.strokeDashoffset = 188.5 - (kp/100*188.5);
   document.getElementById('calPct').textContent = kp + '%';
- 
+
   renderMeals();
 }
- 
+
 function renderMeals() {
   const list = document.getElementById('mealsList');
   const empty = document.getElementById('emptyState');
@@ -450,10 +450,10 @@ function renderMeals() {
     list.appendChild(div);
   });
 }
- 
+
 function delMeal(i) { meals.splice(i,1); saveMeals(); updateUI(); }
 function clearAll() { if(!meals.length) return; if(confirm('Limpar todas as refeições de hoje?')) { meals=[]; saveMeals(); updateUI(); } }
- 
+
 function switchTab(t) {
   ['text','voice','photo'].forEach(tab => {
     const cap = tab.charAt(0).toUpperCase()+tab.slice(1);
@@ -461,18 +461,18 @@ function switchTab(t) {
     document.getElementById('panel'+cap).classList.toggle('active', tab===t);
   });
 }
- 
+
 function toast(msg, dur=2500) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), dur);
 }
- 
+
 function setLoading(on, msg='Analisando com IA...') {
   document.getElementById('loadingMsg').textContent = msg;
   document.getElementById('loading').classList.toggle('show', on);
 }
- 
+
 async function callGemini(parts) {
   if (!apiKey) { toast('Configure sua chave do Gemini primeiro!'); return null; }
   const body = {
@@ -496,7 +496,7 @@ async function callGemini(parts) {
   text = text.replace(/```json|```/g,'').trim();
   return JSON.parse(text);
 }
- 
+
 function addMeal(p, type, thumb) {
   meals.push({
     desc: p.desc || 'Refeição',
@@ -507,7 +507,7 @@ function addMeal(p, type, thumb) {
   saveMeals(); updateUI();
   toast('Refeição adicionada!');
 }
- 
+
 async function submitText() {
   const inp = document.getElementById('textInput');
   const desc = inp.value.trim();
@@ -520,7 +520,7 @@ async function submitText() {
   } catch(e) { toast(e.message); }
   btn.disabled = false; setLoading(false);
 }
- 
+
 function toggleVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { toast('Reconhecimento de voz não disponível neste navegador.'); return; }
@@ -559,7 +559,7 @@ function toggleVoice() {
   };
   recognition.start();
 }
- 
+
 async function submitVoice() {
   if (!voiceText) return;
   const btn = document.getElementById('btnVoice');
@@ -576,7 +576,7 @@ async function submitVoice() {
   } catch(e) { toast(e.message); btn.disabled = false; }
   setLoading(false);
 }
- 
+
 function handlePhoto(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -593,7 +593,7 @@ function handlePhoto(event) {
   reader.readAsDataURL(file);
   event.target.value = '';
 }
- 
+
 function removePhoto() {
   photoB64 = null; photoMime = null;
   document.getElementById('previewWrap').style.display = 'none';
@@ -601,7 +601,7 @@ function removePhoto() {
   document.getElementById('btnPhoto').disabled = true;
   document.getElementById('photoHint').textContent = 'Foto da sua refeição';
 }
- 
+
 async function submitPhoto() {
   if (!photoB64) return;
   const btn = document.getElementById('btnPhoto');
@@ -616,7 +616,7 @@ async function submitPhoto() {
   } catch(e) { toast(e.message); btn.disabled = false; }
   setLoading(false);
 }
- 
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); deferredPrompt = e;
   document.getElementById('installBanner').classList.add('show');
@@ -627,14 +627,14 @@ function installApp() {
   deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBanner').classList.remove('show'); });
 }
 window.addEventListener('appinstalled', () => toast('App instalado com sucesso!'));
- 
+
 document.getElementById('textInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitText(); }
 });
 ['gP','gC','gF'].forEach(id => document.getElementById(id).addEventListener('input', updateUI));
- 
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
- 
+
 init();
 </script>
 </body>
