@@ -342,7 +342,7 @@ let recognition = null, isRecording = false, voiceText = '';
 let deferredPrompt = null;
 let apiKey = '';
 
-const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
 
 const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
 Analise a refeição descrita e estime os valores nutricionais.
@@ -501,6 +501,7 @@ async function callGemini(parts, attempt = 1) {
     let msg = 'Erro na API';
     try { const e = await res.json(); msg = e.error?.message || msg; } catch(_){}
     console.error('Gemini error:', res.status, msg);
+    if (res.status === 404) throw new Error('Modelo não encontrado. Verifique o modelo configurado.');
     if (res.status === 401) throw new Error('Chave inválida. Verifique sua chave do Gemini.');
     if (res.status === 429) {
       if (attempt <= MAX) {
