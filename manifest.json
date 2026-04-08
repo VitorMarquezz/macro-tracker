@@ -1,0 +1,16 @@
+{
+  "name": "Macro Tracker IA",
+  "short_name": "MacroTracker",
+  "description": "Controle seus macronutrientes com Inteligência Artificial",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#185FA5",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["health", "fitness", "food"],
+  "lang": "pt-BR"
+}

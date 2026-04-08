@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#185FA5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MacroTracker">
+<meta name="description" content="Controle seus macronutrientes com IA — grátis">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Macro Tracker IA</title>
+<style>
+  :root {
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --green: #3B6D11;
+    --amber: #BA7517;
+    --red: #E24B4A;
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text2: #555;
+    --text3: #999;
+    --border: rgba(0,0,0,0.10);
+    --radius: 14px;
+    --radius-sm: 9px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f0f;
+      --card: #1c1c1e;
+      --text: #f0f0f0;
+      --text2: #aaa;
+      --text3: #666;
+      --border: rgba(255,255,255,0.10);
+      --blue-light: #0c2a45;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+  .app { max-width: 480px; margin: 0 auto; padding: 0 0 calc(80px + var(--safe-bottom)); }
+
+  .header { background: var(--blue); color: white; padding: 48px 20px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .header-right { text-align: right; }
+  .header-date { font-size: 12px; opacity: 0.75; }
+  .free-badge { font-size: 11px; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; }
+
+  /* API Banner */
+  .api-banner { background: #E6F1FB; border-left: 4px solid var(--blue); margin: 14px 16px; padding: 12px 14px; border-radius: var(--radius-sm); display: none; }
+  .api-banner.show { display: block; }
+  .api-banner h3 { font-size: 14px; font-weight: 600; color: #0C447C; margin-bottom: 4px; }
+  .api-banner p { font-size: 13px; color: #185FA5; margin-bottom: 10px; line-height: 1.5; }
+  .api-steps { font-size: 12px; color: #185FA5; margin-bottom: 10px; line-height: 1.8; }
+  .api-steps a { color: #0C447C; font-weight: 600; }
+  .api-banner input { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #85B7EB; font-size: 14px; background: white; color: #1a1a1a; outline: none; }
+  .api-banner input:focus { border-color: var(--blue); }
+  .api-save-btn { margin-top: 8px; width: 100%; padding: 10px; background: var(--blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+  .section { padding: 14px 16px 0; }
+  .section-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+  .goals-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .goal-box { background: var(--card); border-radius: var(--radius-sm); padding: 10px; border: 1px solid var(--border); text-align: center; }
+  .goal-box label { font-size: 11px; color: var(--text3); display: block; margin-bottom: 4px; }
+  .goal-box input { width: 100%; border: none; outline: none; font-size: 16px; font-weight: 600; text-align: center; background: transparent; color: var(--text); }
+
+  .cal-card { background: var(--card); border-radius: var(--radius); margin: 10px 16px; padding: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .cal-nums .lbl { font-size: 12px; color: var(--text3); }
+  .cal-nums .big { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; margin: 4px 0; }
+  .cal-nums .sub { font-size: 13px; color: var(--text2); }
+  .ring-wrap { position: relative; width: 72px; height: 72px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--text); }
+
+  .macros-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0 16px; }
+  .mc { background: var(--card); border-radius: var(--radius-sm); padding: 12px 10px; border: 1px solid var(--border); }
+  .mc .lbl { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+  .mc .val { font-size: 20px; font-weight: 700; }
+  .mc .sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .mc-p .val { color: var(--blue); }
+  .mc-c .val { color: var(--green); }
+  .mc-f .val { color: var(--amber); }
+  .pbar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 6px; overflow: hidden; }
+  .pbar div { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .pb-p { background: var(--blue); }
+  .pb-c { background: var(--green); }
+  .pb-f { background: var(--amber); }
+
+  .input-card { background: var(--card); border-radius: var(--radius); margin: 12px 16px; border: 1px solid var(--border); overflow: hidden; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tab { flex: 1; padding: 12px 4px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab svg { width: 15px; height: 15px; }
+
+  .panel { display: none; padding: 14px; }
+  .panel.active { display: block; }
+
+  textarea { width: 100%; border: none; outline: none; resize: none; font-size: 15px; color: var(--text); background: transparent; font-family: inherit; min-height: 64px; }
+  textarea::placeholder { color: var(--text3); }
+
+  .action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .hint { font-size: 12px; color: var(--text3); }
+
+  .btn-primary { background: var(--blue); color: white; border: none; border-radius: 9px; padding: 9px 20px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary:active { opacity: 0.85; }
+
+  .voice-center { text-align: center; padding: 6px 0 4px; }
+  .mic-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; transition: all .15s; }
+  .mic-btn.rec { background: var(--red); border-color: var(--red); animation: pulse 1s infinite; }
+  .mic-btn svg { width: 28px; height: 28px; color: var(--text); }
+  .mic-btn.rec svg { color: white; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  .mic-status { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .transcript { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 14px; color: var(--text); min-height: 40px; display: none; border: 1px solid var(--border); }
+
+  .photo-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .photo-btn { padding: 14px 8px; font-size: 14px; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; font-family: inherit; }
+  .photo-btn svg { width: 22px; height: 22px; color: var(--blue); }
+  .photo-btn span { font-size: 11px; color: var(--text3); }
+  .preview-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+  .preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
+  .rm-photo { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.6); border: none; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+  .loading { display: none; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); padding: 8px 16px; }
+  .loading.show { display: flex; }
+  .dots { display: flex; gap: 4px; }
+  .dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: hop 1s infinite; }
+  .dots span:nth-child(2) { animation-delay: .15s; }
+  .dots span:nth-child(3) { animation-delay: .3s; }
+  @keyframes hop { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  .meals-section { padding: 0 16px 12px; }
+  .meals-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .btn-clear { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; color: var(--text2); cursor: pointer; font-family: inherit; }
+
+  .meals-list { display: flex; flex-direction: column; gap: 8px; }
+  .meal { background: var(--card); border-radius: var(--radius-sm); padding: 11px 13px; border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
+  .meal-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+  .meal-thumb-icon { width: 44px; height: 44px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); }
+  .meal-thumb-icon svg { width: 20px; height: 20px; color: var(--text3); }
+  .meal-body { flex: 1; min-width: 0; }
+  .meal-desc { font-size: 14px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meal-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+  .meal-time { font-size: 11px; color: var(--text3); }
+  .badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  .badge-text { background: #E6F1FB; color: #0C447C; }
+  .badge-voice { background: #E1F5EE; color: #085041; }
+  .badge-photo { background: #FAEEDA; color: #633806; }
+  .meal-macros { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .meal-right { text-align: right; flex-shrink: 0; }
+  .meal-kcal { font-size: 14px; font-weight: 700; color: var(--text); }
+  .del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0; margin-top: 2px; }
+
+  .empty { text-align: center; padding: 30px 20px; color: var(--text3); font-size: 14px; }
+  .empty svg { width: 40px; height: 40px; margin: 0 auto 10px; display: block; opacity: 0.3; }
+
+  .toast { position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .install-banner { background: var(--blue-light); border: 1px solid rgba(24,95,165,0.2); margin: 12px 16px; padding: 12px 14px; border-radius: var(--radius-sm); display: none; align-items: center; gap: 10px; }
+  .install-banner.show { display: flex; }
+  .install-banner p { font-size: 13px; color: var(--blue); flex: 1; }
+  .install-banner button { background: var(--blue); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .close-banner { background: none !important; border: none !important; color: var(--blue) !important; font-size: 20px !important; cursor: pointer; padding: 0 !important; line-height: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div>
+      <h1>Macro Tracker IA</h1>
+      <p>Texto · Voz · Foto</p>
+    </div>
+    <div class="header-right">
+      <div class="header-date" id="headerDate"></div>
+      <div class="free-badge">Gemini · Grátis</div>
+    </div>
+  </div>
+
+  <div class="install-banner" id="installBanner">
+    <p>Instale o app na sua tela inicial!</p>
+    <button onclick="installApp()">Instalar</button>
+    <button class="close-banner" onclick="document.getElementById('installBanner').classList.remove('show')">×</button>
+  </div>
+
+  <div class="api-banner show" id="apiBanner">
+    <h3>Configure sua chave do Gemini (grátis)</h3>
+    <p>Você precisa de uma chave gratuita do Google para a IA funcionar.</p>
+    <div class="api-steps">
+      1. Acesse <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
+      2. Clique em <strong>"Create API Key"</strong><br>
+      3. Copie a chave e cole abaixo<br>
+      <strong>Grátis · 1.500 análises/dia · Sem cartão</strong>
+    </div>
+    <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off">
+    <button class="api-save-btn" onclick="saveApiKey()">Salvar e começar</button>
+  </div>
+
+  <div class="section" style="margin-top:12px">
+    <div class="section-title">Metas diárias</div>
+    <div class="goals-row">
+      <div class="goal-box"><label>Proteína (g)</label><input type="number" id="gP" value="150" min="0" max="999"></div>
+      <div class="goal-box"><label>Carboidrato (g)</label><input type="number" id="gC" value="250" min="0" max="999"></div>
+      <div class="goal-box"><label>Gordura (g)</label><input type="number" id="gF" value="70" min="0" max="999"></div>
+    </div>
+  </div>
+
+  <div class="cal-card">
+    <div class="cal-nums">
+      <div class="lbl">Calorias hoje</div>
+      <div class="big" id="calV">0</div>
+      <div class="sub" id="calG">meta: 0 kcal</div>
+    </div>
+    <div class="ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="6"/>
+        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--blue)" stroke-width="6"
+          stroke-dasharray="188.5" id="calArc" stroke-dashoffset="188.5" stroke-linecap="round"/>
+      </svg>
+      <div class="ring-pct" id="calPct">0%</div>
+    </div>
+  </div>
+
+  <div class="macros-row" style="margin-bottom:12px">
+    <div class="mc mc-p">
+      <div class="lbl">Proteína</div>
+      <div class="val"><span id="pV">0</span>g</div>
+      <div class="sub" id="pG">/150g</div>
+      <div class="pbar"><div class="pb-p" id="pBar" style="width:0%"></div></div>
+    </div>
+    <div class="mc mc-c">
+      <div class="lbl">Carboidrato</div>
+      <div class="val"><span id="cV">0</span>g</div>
+      <div class="sub" id="cG">/250g</div>
+      <div class="pbar"><div class="pb-c" id="cBar" style="width:0%"></div></div>
+    </div>
+    <div class="mc mc-f">
+      <div class="lbl">Gordura</div>
+      <div class="val"><span id="fV">0</span>g</div>
+      <div class="sub" id="fG">/70g</div>
+      <div class="pbar"><div class="pb-f" id="fBar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="input-card">
+    <div class="tabs">
+      <button class="tab active" id="tabText" onclick="switchTab('text')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+        Texto
+      </button>
+      <button class="tab" id="tabVoice" onclick="switchTab('voice')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Voz
+      </button>
+      <button class="tab" id="tabPhoto" onclick="switchTab('photo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Foto
+      </button>
+    </div>
+
+    <div class="panel active" id="panelText">
+      <textarea id="textInput" placeholder="Ex: frango grelhado 150g, arroz 3 colheres, feijão 1 concha, salada..."></textarea>
+      <div class="action-row">
+        <span class="hint">Descreva com detalhes</span>
+        <button class="btn-primary" id="btnText" onclick="submitText()">Analisar</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panelVoice">
+      <div class="voice-center">
+        <button class="mic-btn" id="micBtn" onclick="toggleVoice()">
+          <svg id="micIconOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <svg id="micIconOn" style="display:none" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+        <div class="mic-status" id="micStatus">Toque para falar</div>
+        <div class="transcript" id="transcript"></div>
+      </div>
+      <div class="action-row">
+        <span class="hint" id="voiceHint">Diga o que comeu</span>
+        <button class="btn-primary" id="btnVoice" onclick="submitVoice()" disabled>Analisar</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panelPhoto">
+      <div id="photoBtns" class="photo-btns">
+        <button class="photo-btn" onclick="document.getElementById('camIn').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Câmera
+          <span>Tirar foto agora</span>
+        </button>
+        <button class="photo-btn" onclick="document.getElementById('galIn').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Galeria
+          <span>Escolher foto</span>
+        </button>
+      </div>
+      <input type="file" id="camIn" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+      <input type="file" id="galIn" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+      <div id="previewWrap" style="display:none" class="preview-wrap">
+        <img id="previewImg" src="" alt="Foto da refeição">
+        <button class="rm-photo" onclick="removePhoto()">×</button>
+      </div>
+      <div class="action-row">
+        <span class="hint" id="photoHint">Foto da sua refeição</span>
+        <button class="btn-primary" id="btnPhoto" onclick="submitPhoto()" disabled>Analisar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <span id="loadingMsg">Analisando com IA...</span>
+  </div>
+
+  <div class="meals-section">
+    <div class="meals-header">
+      <div class="section-title" style="margin:0">Refeições de hoje</div>
+      <button class="btn-clear" onclick="clearAll()">Limpar tudo</button>
+    </div>
+    <div class="meals-list" id="mealsList">
+      <div class="empty" id="emptyState">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        Nenhuma refeição ainda.<br>Registre sua primeira refeição acima!
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let meals = [], photoB64 = null, photoMime = null;
+let recognition = null, isRecording = false, voiceText = '';
+let deferredPrompt = null;
+let apiKey = '';
+
+const GEMINI_URL = key =>
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+
+const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
+Analise a refeição descrita e estime os valores nutricionais.
+Responda SOMENTE com JSON válido, sem texto extra, sem markdown, sem backticks:
+{"prot":número,"carb":número,"fat":número,"kcal":número,"desc":"descrição curta em até 8 palavras em português"}
+Use estimativas realistas para porções brasileiras típicas.`;
+
+function init() {
+  apiKey = localStorage.getItem('mt_gemini_key') || '';
+  if (apiKey) document.getElementById('apiBanner').classList.remove('show');
+
+  try {
+    const s = localStorage.getItem('mt_meals_v3');
+    if (s) { const d = JSON.parse(s); if (d.date === new Date().toDateString()) meals = d.meals || []; }
+  } catch(e){}
+
+  try {
+    const g = JSON.parse(localStorage.getItem('mt_goals') || '{}');
+    if (g.p) document.getElementById('gP').value = g.p;
+    if (g.c) document.getElementById('gC').value = g.c;
+    if (g.f) document.getElementById('gF').value = g.f;
+  } catch(e){}
+
+  document.getElementById('headerDate').textContent =
+    new Date().toLocaleDateString('pt-BR', {weekday:'short', day:'numeric', month:'short'});
+
+  updateUI();
+}
+
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k || k.length < 10) { toast('Chave inválida. Verifique e tente novamente.'); return; }
+  apiKey = k;
+  localStorage.setItem('mt_gemini_key', k);
+  document.getElementById('apiBanner').classList.remove('show');
+  toast('Chave salva! Tudo pronto.');
+}
+
+function getGoals() {
+  const p = parseInt(document.getElementById('gP').value)||150;
+  const c = parseInt(document.getElementById('gC').value)||250;
+  const f = parseInt(document.getElementById('gF').value)||70;
+  localStorage.setItem('mt_goals', JSON.stringify({p,c,f}));
+  return {p,c,f};
+}
+
+function saveMeals() {
+  localStorage.setItem('mt_meals_v3', JSON.stringify({ date: new Date().toDateString(), meals }));
+}
+
+function updateUI() {
+  const g = getGoals();
+  const t = meals.reduce((a,m) => ({p:a.p+m.prot,c:a.c+m.carb,f:a.f+m.fat,k:a.k+m.kcal}), {p:0,c:0,f:0,k:0});
+  const cg = g.p*4 + g.c*4 + g.f*9;
+
+  document.getElementById('pV').textContent = Math.round(t.p);
+  document.getElementById('cV').textContent = Math.round(t.c);
+  document.getElementById('fV').textContent = Math.round(t.f);
+  document.getElementById('calV').textContent = Math.round(t.k);
+  document.getElementById('calG').textContent = 'meta: ' + cg + ' kcal';
+  document.getElementById('pG').textContent = '/' + g.p + 'g';
+  document.getElementById('cG').textContent = '/' + g.c + 'g';
+  document.getElementById('fG').textContent = '/' + g.f + 'g';
+
+  document.getElementById('pBar').style.width = Math.min(100,Math.round(t.p/g.p*100)) + '%';
+  document.getElementById('cBar').style.width = Math.min(100,Math.round(t.c/g.c*100)) + '%';
+  document.getElementById('fBar').style.width = Math.min(100,Math.round(t.f/g.f*100)) + '%';
+
+  const kp = cg > 0 ? Math.min(100, Math.round(t.k/cg*100)) : 0;
+  document.getElementById('calArc').style.strokeDashoffset = 188.5 - (kp/100*188.5);
+  document.getElementById('calPct').textContent = kp + '%';
+
+  renderMeals();
+}
+
+function renderMeals() {
+  const list = document.getElementById('mealsList');
+  const empty = document.getElementById('emptyState');
+  if (!meals.length) { list.innerHTML=''; list.appendChild(empty); empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+  [...meals].reverse().forEach((m, ri) => {
+    const i = meals.length - 1 - ri;
+    const div = document.createElement('div');
+    div.className = 'meal';
+    const bClass = m.type==='voice'?'badge-voice':m.type==='photo'?'badge-photo':'badge-text';
+    const bLabel = m.type==='voice'?'voz':m.type==='photo'?'foto':'texto';
+    const iconVoice = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>`;
+    const iconText = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>`;
+    const thumbHtml = m.thumb
+      ? `<img class="meal-thumb" src="${m.thumb}" alt="">`
+      : `<div class="meal-thumb-icon">${m.type==='voice'?iconVoice:iconText}</div>`;
+    div.innerHTML = `${thumbHtml}
+      <div class="meal-body">
+        <div class="meal-desc">${m.desc}</div>
+        <div class="meal-meta"><span class="meal-time">${m.time}</span><span class="badge ${bClass}">${bLabel}</span></div>
+        <div class="meal-macros">P:${Math.round(m.prot)}g · C:${Math.round(m.carb)}g · G:${Math.round(m.fat)}g</div>
+      </div>
+      <div class="meal-right">
+        <div class="meal-kcal">${Math.round(m.kcal)}</div>
+        <div style="font-size:11px;color:var(--text3)">kcal</div>
+        <button class="del" onclick="delMeal(${i})">×</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function delMeal(i) { meals.splice(i,1); saveMeals(); updateUI(); }
+function clearAll() { if(!meals.length) return; if(confirm('Limpar todas as refeições de hoje?')) { meals=[]; saveMeals(); updateUI(); } }
+
+function switchTab(t) {
+  ['text','voice','photo'].forEach(tab => {
+    const cap = tab.charAt(0).toUpperCase()+tab.slice(1);
+    document.getElementById('tab'+cap).classList.toggle('active', tab===t);
+    document.getElementById('panel'+cap).classList.toggle('active', tab===t);
+  });
+}
+
+function toast(msg, dur=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function setLoading(on, msg='Analisando com IA...') {
+  document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loading').classList.toggle('show', on);
+}
+
+async function callGemini(parts) {
+  if (!apiKey) { toast('Configure sua chave do Gemini primeiro!'); return null; }
+  const body = {
+    contents: [{ parts: [{ text: PROMPT_SYSTEM }, ...parts] }],
+    generationConfig: { temperature: 0.2, maxOutputTokens: 256 }
+  };
+  const res = await fetch(GEMINI_URL(apiKey), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const e = await res.json();
+    const msg = e.error?.message || 'Erro na API';
+    if (msg.includes('API_KEY')) throw new Error('Chave inválida. Verifique sua chave do Gemini.');
+    if (msg.includes('quota')) throw new Error('Limite diário atingido. Tente amanhã.');
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  text = text.replace(/```json|```/g,'').trim();
+  return JSON.parse(text);
+}
+
+function addMeal(p, type, thumb) {
+  meals.push({
+    desc: p.desc || 'Refeição',
+    prot: p.prot||0, carb: p.carb||0, fat: p.fat||0, kcal: p.kcal||0,
+    type, thumb: type==='photo' ? thumb : null,
+    time: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+  });
+  saveMeals(); updateUI();
+  toast('Refeição adicionada!');
+}
+
+async function submitText() {
+  const inp = document.getElementById('textInput');
+  const desc = inp.value.trim();
+  if (!desc) return;
+  const btn = document.getElementById('btnText');
+  btn.disabled = true; setLoading(true);
+  try {
+    const p = await callGemini([{ text: 'Refeição: ' + desc }]);
+    if (p) { addMeal(p, 'text', null); inp.value = ''; }
+  } catch(e) { toast(e.message); }
+  btn.disabled = false; setLoading(false);
+}
+
+function toggleVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Reconhecimento de voz não disponível neste navegador.'); return; }
+  if (isRecording) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = 'pt-BR';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  isRecording = true; voiceText = '';
+  const mic = document.getElementById('micBtn');
+  const st = document.getElementById('micStatus');
+  const tr = document.getElementById('transcript');
+  mic.classList.add('rec');
+  document.getElementById('micIconOff').style.display = 'none';
+  document.getElementById('micIconOn').style.display = 'block';
+  st.textContent = 'Gravando... toque para parar';
+  tr.style.display = 'block'; tr.textContent = '...';
+  document.getElementById('btnVoice').disabled = true;
+  recognition.onresult = e => {
+    let f='', im='';
+    for (const r of e.results) { if(r.isFinal) f+=r[0].transcript; else im+=r[0].transcript; }
+    voiceText = f || im; tr.textContent = voiceText || '...';
+  };
+  recognition.onend = () => {
+    isRecording = false; mic.classList.remove('rec');
+    document.getElementById('micIconOff').style.display = 'block';
+    document.getElementById('micIconOn').style.display = 'none';
+    st.textContent = voiceText ? 'Gravação concluída' : 'Toque para falar';
+    if (voiceText) { document.getElementById('btnVoice').disabled = false; document.getElementById('voiceHint').textContent = 'Pronto para analisar'; }
+  };
+  recognition.onerror = () => {
+    isRecording = false; mic.classList.remove('rec');
+    document.getElementById('micIconOff').style.display = 'block';
+    document.getElementById('micIconOn').style.display = 'none';
+    st.textContent = 'Erro. Tente novamente.';
+  };
+  recognition.start();
+}
+
+async function submitVoice() {
+  if (!voiceText) return;
+  const btn = document.getElementById('btnVoice');
+  btn.disabled = true; setLoading(true, 'Analisando áudio com IA...');
+  try {
+    const p = await callGemini([{ text: 'Refeição (por voz): ' + voiceText }]);
+    if (p) {
+      addMeal(p, 'voice', null); voiceText = '';
+      document.getElementById('transcript').textContent = '';
+      document.getElementById('transcript').style.display = 'none';
+      document.getElementById('micStatus').textContent = 'Toque para falar';
+      document.getElementById('voiceHint').textContent = 'Diga o que comeu';
+    }
+  } catch(e) { toast(e.message); btn.disabled = false; }
+  setLoading(false);
+}
+
+function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    photoB64 = url.split(',')[1]; photoMime = file.type;
+    document.getElementById('previewImg').src = url;
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('photoBtns').style.display = 'none';
+    document.getElementById('btnPhoto').disabled = false;
+    document.getElementById('photoHint').textContent = 'Foto pronta';
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function removePhoto() {
+  photoB64 = null; photoMime = null;
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('photoBtns').style.display = 'grid';
+  document.getElementById('btnPhoto').disabled = true;
+  document.getElementById('photoHint').textContent = 'Foto da sua refeição';
+}
+
+async function submitPhoto() {
+  if (!photoB64) return;
+  const btn = document.getElementById('btnPhoto');
+  const thumb = document.getElementById('previewImg').src;
+  btn.disabled = true; setLoading(true, 'Analisando foto com IA...');
+  try {
+    const p = await callGemini([
+      { inline_data: { mime_type: photoMime, data: photoB64 } },
+      { text: 'Identifique todos os alimentos nesta foto e estime os macronutrientes da refeição.' }
+    ]);
+    if (p) { addMeal(p, 'photo', thumb); removePhoto(); }
+  } catch(e) { toast(e.message); btn.disabled = false; }
+  setLoading(false);
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBanner').classList.remove('show'); });
+}
+window.addEventListener('appinstalled', () => toast('App instalado com sucesso!'));
+
+document.getElementById('textInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitText(); }
+});
+['gP','gC','gF'].forEach(id => document.getElementById(id).addEventListener('input', updateUI));
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+init();
+</script>
+</body>
+</html>
