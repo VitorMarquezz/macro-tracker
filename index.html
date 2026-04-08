@@ -139,6 +139,17 @@
   .meals-section { padding: 0 16px 12px; }
   .meals-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .btn-clear { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .btn-finish-day { width: calc(100% - 32px); margin: 8px 16px 16px; padding: 14px; background: var(--blue); color: white; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-finish-day:active { opacity: 0.85; }
+  .history-section { padding: 0 16px 80px; }
+  .history-day { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
+  .history-day-header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .history-day-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .history-day-kcal { font-size: 12px; color: var(--text3); }
+  .history-day-macros { font-size: 11px; color: var(--text3); padding: 0 14px 10px; display: none; }
+  .history-day-macros.open { display: block; }
+  .history-meal-item { font-size: 12px; color: var(--text2); padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .history-meal-item:last-child { border-bottom: none; }
 
   .meals-list { display: flex; flex-direction: column; gap: 8px; }
   .meal { background: var(--card); border-radius: var(--radius-sm); padding: 11px 13px; border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; }
@@ -332,23 +343,45 @@
       </div>
     </div>
   </div>
+  <button class="btn-finish-day" onclick="finishDay()">✓ Finalizar dia</button>
+
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="section-title">Histórico</div>
+    <div id="historyList"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 let meals = [], photoB64 = null, photoMime = null;
+let mealHistory = [];
 let recognition = null, isRecording = false, voiceText = '';
 let deferredPrompt = null;
 let apiKey = '';
 
 const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${key}`;
 
-const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
+function buildPrompt() {
+  // Pega as 20 refeições mais frequentes do histórico para dar contexto
+  const allMeals = mealHistory.flatMap(d => d.meals || []);
+  const freq = {};
+  allMeals.forEach(m => {
+    const key = m.desc.toLowerCase();
+    if (!freq[key]) freq[key] = { desc: m.desc, prot: m.prot, carb: m.carb, fat: m.fat, kcal: m.kcal, count: 0 };
+    freq[key].count++;
+  });
+  const top = Object.values(freq).sort((a,b) => b.count - a.count).slice(0, 15);
+  const context = top.length > 0
+    ? `\nRefeições frequentes deste usuário (use como referência de porções):\n` +
+      top.map(m => `- ${m.desc}: P${Math.round(m.prot)}g C${Math.round(m.carb)}g G${Math.round(m.fat)}g ${Math.round(m.kcal)}kcal`).join('\n')
+    : '';
+  return `Você é nutricionista especialista em macronutrientes brasileiros.
 Analise a refeição descrita e estime os valores nutricionais.
 Responda SOMENTE com JSON válido, sem texto extra, sem markdown, sem backticks:
 {"prot":número,"carb":número,"fat":número,"kcal":número,"desc":"descrição curta em até 8 palavras em português"}
-Use estimativas realistas para porções brasileiras típicas.`;
+Use estimativas realistas para porções brasileiras típicas.${context}`;
+}
 
 function init() {
   apiKey = localStorage.getItem('mt_gemini_key') || '';
@@ -368,6 +401,11 @@ function init() {
 
   document.getElementById('headerDate').textContent =
     new Date().toLocaleDateString('pt-BR', {weekday:'short', day:'numeric', month:'short'});
+
+  try {
+    mealHistory = JSON.parse(localStorage.getItem('mt_history') || '[]');
+    renderHistory();
+  } catch(e) { mealHistory = []; }
 
   updateUI();
 }
@@ -451,6 +489,50 @@ function renderMeals() {
 }
 
 function delMeal(i) { meals.splice(i,1); saveMeals(); updateUI(); }
+
+function finishDay() {
+  if (!meals.length) { toast('Nenhuma refeição para finalizar!'); return; }
+  if (!confirm('Finalizar o dia e salvar no histórico?')) return;
+  const today = new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+  const totals = meals.reduce((a,m) => ({p:a.p+m.prot,c:a.c+m.carb,f:a.f+m.fat,k:a.k+m.kcal}), {p:0,c:0,f:0,k:0});
+  // Remove entrada do mesmo dia se existir
+  mealHistory = mealHistory.filter(d => d.date !== today);
+  mealHistory.unshift({ date: today, meals: [...meals], totals });
+  // Mantém só 30 dias
+  if (mealHistory.length > 30) mealHistory = mealHistory.slice(0, 30);
+  localStorage.setItem('mt_history', JSON.stringify(mealHistory));
+  meals = []; saveMeals(); updateUI(); renderHistory();
+  toast('Dia finalizado e salvo no histórico! 🎉', 3000);
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const section = document.getElementById('historySection');
+  if (!list || !section) return;
+  if (!mealHistory.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = mealHistory.map((day, di) => {
+    const t = day.totals;
+    const mealsHtml = (day.meals || []).map(m =>
+      `<div class="history-meal-item">${m.desc} — ${Math.round(m.kcal)}kcal · P${Math.round(m.prot)}g C${Math.round(m.carb)}g G${Math.round(m.fat)}g</div>`
+    ).join('');
+    return `<div class="history-day">
+      <div class="history-day-header" onclick="toggleHistoryDay(${di})">
+        <div class="history-day-title">${day.date}</div>
+        <div class="history-day-kcal">${Math.round(t.k)} kcal</div>
+      </div>
+      <div class="history-day-macros" id="hday${di}">
+        <div style="margin-bottom:6px;font-size:12px;color:var(--text2)">P${Math.round(t.p)}g · C${Math.round(t.c)}g · G${Math.round(t.f)}g</div>
+        ${mealsHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistoryDay(i) {
+  const el = document.getElementById('hday' + i);
+  if (el) el.classList.toggle('open');
+}
 function clearAll() { if(!meals.length) return; if(confirm('Limpar todas as refeições de hoje?')) { meals=[]; saveMeals(); updateUI(); } }
 
 function switchTab(t) {
@@ -478,7 +560,7 @@ async function callGemini(parts, isPhoto = false, attempt = 1) {
 
   const geminiParts = isPhoto
     ? parts  // foto: partes já vêm no formato correto (text + inline_data)
-    : [{ text: PROMPT_SYSTEM }, ...parts];
+    : [{ text: buildPrompt() }, ...parts];
   const body = {
     contents: [{ parts: geminiParts }],
     generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
