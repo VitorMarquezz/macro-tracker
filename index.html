@@ -342,7 +342,7 @@ let recognition = null, isRecording = false, voiceText = '';
 let deferredPrompt = null;
 let apiKey = '';
 
-const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${key}`;
 
 const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
 Analise a refeição descrita e estime os valores nutricionais.
