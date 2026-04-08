@@ -181,7 +181,7 @@
     </div>
     <div class="header-right">
       <div class="header-date" id="headerDate"></div>
-      <div class="free-badge">Gemini · Grátis</div>
+      <div class="free-badge">OpenRouter · Grátis</div>
     </div>
   </div>
 
@@ -192,15 +192,15 @@
   </div>
 
   <div class="api-banner show" id="apiBanner">
-    <h3>Configure sua chave do Gemini (grátis)</h3>
-    <p>Você precisa de uma chave gratuita do Google para a IA funcionar.</p>
+    <h3>Configure sua chave do OpenRouter (grátis)</h3>
+    <p>Você precisa de uma chave gratuita do OpenRouter para a IA funcionar.</p>
     <div class="api-steps">
-      1. Acesse <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
+      1. Acesse <a href="https://openrouter.ai/settings/keys" target="_blank">openrouter.ai/settings/keys</a><br>
       2. Clique em <strong>"Create API Key"</strong><br>
       3. Copie a chave e cole abaixo<br>
-      <strong>Grátis · 1.500 análises/dia · Sem cartão</strong>
+      <strong>Grátis · Sem cartão · Modelos open-source</strong>
     </div>
-    <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off">
+    <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off">
     <button class="api-save-btn" onclick="saveApiKey()">Salvar e começar</button>
   </div>
 
@@ -342,8 +342,7 @@ let recognition = null, isRecording = false, voiceText = '';
 let deferredPrompt = null;
 let apiKey = '';
 
-const GEMINI_URL = key =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 const PROMPT_SYSTEM = `Você é nutricionista especialista em macronutrientes brasileiros.
 Analise a refeição descrita e estime os valores nutricionais.
@@ -352,7 +351,7 @@ Responda SOMENTE com JSON válido, sem texto extra, sem markdown, sem backticks:
 Use estimativas realistas para porções brasileiras típicas.`;
 
 function init() {
-  apiKey = localStorage.getItem('mt_gemini_key') || '';
+  apiKey = localStorage.getItem('mt_or_key') || '';
   if (apiKey) document.getElementById('apiBanner').classList.remove('show');
 
   try {
@@ -377,7 +376,7 @@ function saveApiKey() {
   const k = document.getElementById('apiKeyInput').value.trim();
   if (!k || k.length < 10) { toast('Chave inválida. Verifique e tente novamente.'); return; }
   apiKey = k;
-  localStorage.setItem('mt_gemini_key', k);
+  localStorage.setItem('mt_or_key', k);
   document.getElementById('apiBanner').classList.remove('show');
   toast('Chave salva! Tudo pronto.');
 }
@@ -474,18 +473,31 @@ function setLoading(on, msg='Analisando com IA...') {
 }
 
 async function callGemini(parts, attempt = 1) {
-  if (!apiKey) { toast('Configure sua chave do Gemini primeiro!'); return null; }
-  const MAX = 5;
-  const body = {
-    contents: [{ parts: [{ text: PROMPT_SYSTEM }, ...parts] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
-  };
+  if (!apiKey) { toast('Configure sua chave do OpenRouter primeiro!'); return null; }
+  const MAX = 3;
+
+  // Monta mensagens no formato OpenAI
+  const messages = [
+    { role: 'system', content: PROMPT_SYSTEM },
+    { role: 'user', content: parts.map(p => p.text || '').join('\n') }
+  ];
+
   let res;
   try {
-    res = await fetch(GEMINI_URL(apiKey), {
+    res = await fetch(OPENROUTER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'Macro Tracker IA'
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        messages,
+        temperature: 0.2,
+        max_tokens: 256
+      })
     });
   } catch(e) {
     if (attempt <= MAX) {
@@ -499,31 +511,27 @@ async function callGemini(parts, attempt = 1) {
   if (!res.ok) {
     let msg = 'Erro na API';
     try { const e = await res.json(); msg = e.error?.message || msg; } catch(_){}
-    console.error('Gemini error:', res.status, msg);
-    if (msg.includes('API_KEY') || msg.includes('expired')) throw new Error('Chave inválida. Verifique sua chave do Gemini.');
-    if (msg.includes('quota') || msg.includes('limit')) throw new Error('Limite diário atingido. Tente amanhã.');
+    console.error('OpenRouter error:', res.status, msg);
+    if (res.status === 401) throw new Error('Chave inválida. Verifique sua chave do OpenRouter.');
+    if (res.status === 429) {
+      if (attempt <= MAX) {
+        toast(`Muitas requisições, aguardando 10s... (${attempt}/${MAX})`);
+        await new Promise(r => setTimeout(r, 10000));
+        return callGemini(parts, attempt + 1);
+      }
+      throw new Error('Limite atingido. Aguarde um momento e tente novamente.');
+    }
     if (attempt <= MAX) {
       toast(`Servidor ocupado, tentando novamente (${attempt}/${MAX})...`);
-      await new Promise(r => setTimeout(r, 2000 * attempt));
+      await new Promise(r => setTimeout(r, 3000 * attempt));
       return callGemini(parts, attempt + 1);
     }
     throw new Error(msg);
   }
 
-  const raw = await res.text();
-  console.log('Gemini raw response:', raw);
-
-  let data;
-  try { data = JSON.parse(raw); } catch(e) {
-    if (attempt <= MAX) {
-      await new Promise(r => setTimeout(r, 1500));
-      return callGemini(parts, attempt + 1);
-    }
-    throw new Error('Resposta inválida do servidor. Tente novamente.');
-  }
-
-  let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  console.log('Gemini text:', text);
+  const data = await res.json();
+  let text = data.choices?.[0]?.message?.content || '';
+  console.log('OpenRouter response:', text);
   text = text.replace(/```json|```/g, '').trim();
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) {
@@ -531,7 +539,7 @@ async function callGemini(parts, attempt = 1) {
       await new Promise(r => setTimeout(r, 1500));
       return callGemini(parts, attempt + 1);
     }
-    throw new Error('Resposta inválida do servidor. Tente novamente.');
+    throw new Error('Resposta inválida. Tente novamente.');
   }
   try {
     return JSON.parse(match[0]);
