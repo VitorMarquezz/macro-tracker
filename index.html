@@ -472,12 +472,15 @@ function setLoading(on, msg='Analisando com IA...') {
   document.getElementById('loading').classList.toggle('show', on);
 }
 
-async function callGemini(parts, attempt = 1) {
+async function callGemini(parts, isPhoto = false, attempt = 1) {
   if (!apiKey) { toast('Configure sua chave do Gemini primeiro!'); return null; }
   const MAX = 3;
 
+  const geminiParts = isPhoto
+    ? parts  // foto: partes já vêm no formato correto (text + inline_data)
+    : [{ text: PROMPT_SYSTEM }, ...parts];
   const body = {
-    contents: [{ parts: [{ text: PROMPT_SYSTEM }, ...parts] }],
+    contents: [{ parts: geminiParts }],
     generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
   };
 
@@ -492,7 +495,7 @@ async function callGemini(parts, attempt = 1) {
     if (attempt <= MAX) {
       toast(`Erro de conexão, tentando novamente (${attempt}/${MAX})...`);
       await new Promise(r => setTimeout(r, 2000 * attempt));
-      return callGemini(parts, attempt + 1);
+      return callGemini(parts, isPhoto, attempt + 1);
     }
     throw new Error('Sem conexão com o servidor. Verifique sua internet.');
   }
@@ -507,14 +510,14 @@ async function callGemini(parts, attempt = 1) {
       if (attempt <= MAX) {
         toast(`Muitas requisições, aguardando 10s... (${attempt}/${MAX})`);
         await new Promise(r => setTimeout(r, 10000));
-        return callGemini(parts, attempt + 1);
+        return callGemini(parts, isPhoto, attempt + 1);
       }
       throw new Error('Limite atingido. Aguarde um momento e tente novamente.');
     }
     if (attempt <= MAX) {
       toast(`Servidor ocupado, tentando novamente (${attempt}/${MAX})...`);
       await new Promise(r => setTimeout(r, 3000 * attempt));
-      return callGemini(parts, attempt + 1);
+      return callGemini(parts, isPhoto, attempt + 1);
     }
     throw new Error(msg);
   }
@@ -527,7 +530,7 @@ async function callGemini(parts, attempt = 1) {
   if (!match) {
     if (attempt <= MAX) {
       await new Promise(r => setTimeout(r, 1500));
-      return callGemini(parts, attempt + 1);
+      return callGemini(parts, isPhoto, attempt + 1);
     }
     throw new Error('Resposta inválida. Tente novamente.');
   }
@@ -536,7 +539,7 @@ async function callGemini(parts, attempt = 1) {
   } catch(e) {
     if (attempt <= MAX) {
       await new Promise(r => setTimeout(r, 1500));
-      return callGemini(parts, attempt + 1);
+      return callGemini(parts, isPhoto, attempt + 1);
     }
     throw new Error('Erro ao processar resposta. Tente novamente.');
   }
@@ -572,7 +575,7 @@ function toggleVoice() {
   if (isRecording) { recognition && recognition.stop(); return; }
   recognition = new SR();
   recognition.lang = 'pt-BR';
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.interimResults = true;
   isRecording = true; voiceText = '';
   const mic = document.getElementById('micBtn');
@@ -585,18 +588,24 @@ function toggleVoice() {
   tr.style.display = 'block'; tr.textContent = '...';
   document.getElementById('btnVoice').disabled = true;
   recognition.onresult = e => {
-    let f='', im='';
-    for (const r of e.results) { if(r.isFinal) f+=r[0].transcript; else im+=r[0].transcript; }
-    voiceText = f || im; tr.textContent = voiceText || '...';
+    let finalText = '';
+    for (const r of e.results) { if(r.isFinal) finalText += r[0].transcript + ' '; }
+    if (finalText.trim()) voiceText = finalText.trim();
+    let interim = '';
+    for (const r of e.results) { if(!r.isFinal) interim += r[0].transcript; }
+    tr.textContent = (voiceText + ' ' + interim).trim() || '...';
   };
   recognition.onend = () => {
-    isRecording = false; mic.classList.remove('rec');
+    // Se ainda está gravando (não foi parado pelo usuário), reinicia
+    if (isRecording) { try { recognition.start(); } catch(e) {} return; }
+    mic.classList.remove('rec');
     document.getElementById('micIconOff').style.display = 'block';
     document.getElementById('micIconOn').style.display = 'none';
     st.textContent = voiceText ? 'Gravação concluída' : 'Toque para falar';
     if (voiceText) { document.getElementById('btnVoice').disabled = false; document.getElementById('voiceHint').textContent = 'Pronto para analisar'; }
   };
-  recognition.onerror = () => {
+  recognition.onerror = (err) => {
+    if (err.error === 'no-speech' && isRecording) { try { recognition.start(); } catch(e) {} return; }
     isRecording = false; mic.classList.remove('rec');
     document.getElementById('micIconOff').style.display = 'block';
     document.getElementById('micIconOn').style.display = 'none';
@@ -654,9 +663,16 @@ async function submitPhoto() {
   btn.disabled = true; setLoading(true, 'Analisando foto com IA...');
   try {
     const p = await callGemini([
-      { inline_data: { mime_type: photoMime, data: photoB64 } },
-      { text: 'Identifique todos os alimentos nesta foto e estime os macronutrientes da refeição.' }
-    ]);
+      { text: `Você é nutricionista especialista em macronutrientes brasileiros.
+Analise esta foto de refeição/alimento com cuidado.
+1. Identifique cada alimento visível na foto
+2. Estime o peso em gramas de cada um com base no tamanho visual
+3. Calcule os macronutrientes totais somando todos os alimentos
+Responda SOMENTE com JSON válido, sem texto extra, sem markdown, sem backticks:
+{"prot":número,"carb":número,"fat":número,"kcal":número,"desc":"lista dos alimentos identificados em até 10 palavras em português"}
+Use estimativas realistas para porções brasileiras típicas.` },
+      { inline_data: { mime_type: photoMime, data: photoB64 } }
+    ], true);
     if (p) { addMeal(p, 'photo', thumb); removePhoto(); }
   } catch(e) { toast(e.message); btn.disabled = false; }
   setLoading(false);
